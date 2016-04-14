@@ -124,39 +124,6 @@
         this.width = settings.menuWidth;
         this.semiOpenMenuWidth = settings.semiOpenMenuWidth;
 
-        // CSS for how the menu will be positioned off screen
-        var positionOffScreen = {
-          'position': 'fixed',
-          'top': '0',
-          'bottom': '0',
-          'height': '100%'
-        };
-
-        // css for the sliding animation
-        var animateSlide = {
-          '-webkit-transition': settings.side + ' ' + settings.speed + 'ms ease',
-          '-moz-transition': settings.side + ' ' + settings.speed + 'ms ease',
-          '-ms-transition': settings.side + ' ' + settings.speed + 'ms ease',
-          '-o-transition': settings.side + ' ' + settings.speed + 'ms ease',
-          'transition': settings.side + ' ' + settings.speed + 'ms ease'
-        };
-
-        // css for the shrink animation
-        var animateShrink = {
-          '-webkit-transition': 'all ' + settings.speed + 'ms ease',
-          '-moz-transition': 'all ' + settings.speed + 'ms ease',
-          '-ms-transition': 'all ' + settings.speed + 'ms ease',
-          '-o-transition': 'all ' + settings.speed + 'ms ease',
-          'transition': 'all ' + settings.speed + 'ms ease'
-        };
-
-        // we want to add the css sliding animation when the page is loaded (on the first menu link click)
-        var animationApplied = false;
-
-        // manually add the settings values
-        positionOffScreen[settings.side] = '-' + settings.menuWidth;
-        positionOffScreen.width = settings.menuWidth;
-
         // get the initial state based on the last saved state or on the state option
         var initialState = 'closed';
         if (settings.saveState) {
@@ -170,43 +137,25 @@
         controller.setState(initialState);
 
         // add the css values to position things offscreen or inscreen depending on the initial state value
-        this.$menu.css(positionOffScreen);
-
         var initialScreenWidth = $(window).width();
         if (initialState === 'closed') {
           if (settings.semiOpenStatus && initialScreenWidth > settings.semiOpenScreenWidth) {
-            this.$hiddenThin.hide();
-            this.$menu.css(settings.side, '0');
-            this.$menu.css('width', this.semiOpenMenuWidth);
-            this.$push.css(settings.side, this.semiOpenMenuWidth);
-            this.$shrink.css({
-              'width': 'calc(100% - ' + this.semiOpenMenuWidth + ')'
-            });
             this.$menu.addClass('semiOpen');
+            this.$push.addClass('semiOpen');
           } else {
-            this.$push.css(settings.side, '0');
+            this.$menu.addClass('closed');
+            this.$push.addClass('closed');
           }
         } else if (initialState === 'open') {
-          this.$menu.css(settings.side, '0');
-          this.$push.css(settings.side, this.width);
-          this.$shrink.css({
-            'width': 'calc(100% - ' + this.width + ')'
-          });
           menuLink.addClass(settings.activeBtn);
+          this.$menu.addClass('open');
+          this.$push.addClass('open');
         }
 
         var that = this;
 
         // register a click listener for desktop & touchstart for mobile
         menuLink.on('click.bigSlide touchstart.bigSlide', function(e) {
-          // add the animation css if not present
-          if (!animationApplied) {
-            that.$menu.css(animateSlide);
-            that.$push.css(animateSlide);
-            that.$shrink.css(animateShrink);
-            animationApplied = true;
-          }
-
           e.preventDefault();
           if (controller.getState() === 'open') {
             view.toggleClose();
@@ -222,22 +171,14 @@
                 var screenWidth = $(window).width();
                 if (screenWidth > settings.semiOpenScreenWidth) {
                     if (controller.getState() === 'closed') {
-                        that.$hiddenThin.hide();
-                        that.$menu.css({ width: that.semiOpenMenuWidth});
-                        that.$menu.css(settings.side, '0');
-                        that.$push.css(settings.side, that.semiOpenMenuWidth);
-                        that.$shrink.css({
-                          'width': 'calc(100% - ' + that.semiOpenMenuWidth + ')'
-                        });
-                        that.$menu.addClass('semiOpen');
+                      that.$menu.addClass('semiOpen').removeClass('open closed');
+                      that.$push.addClass('semiOpen').removeClass('open closed');
                     }
                 } else {
                     that.$menu.removeClass('semiOpen');
                     if (controller.getState() === 'closed') {
-                        that.$menu.css(settings.side, '-' + that.width).css({width: that.width});
-                        that.$push.css(settings.side, '0');
-                        that.$shrink.css('width', '100%');
-                        that.$hiddenThin.show();
+                      that.$menu.addClass('closed').removeClass('open semiOpen');
+                      that.$push.addClass('closed').removeClass('open semiOpen');
                     }
                 }
             });
@@ -315,36 +256,22 @@
       applyOpenStyles: function() {
         var screenWidth = $(window).width();
         if (settings.semiOpenStatus && screenWidth > settings.semiOpenScreenWidth) {
-          this.$hiddenThin.show();
-          this.$menu.animate({ width: this.width}, {duration: Math.abs(settings.speed - 100), easing: 'linear'});
-          this.$push.css(settings.side, this.width);
-          this.$shrink.css({
-            'width': 'calc(100% - ' + this.width + ')'
-          });
-          this.$menu.removeClass('semiOpen');
+          this.$menu.addClass('open').removeClass('semiOpen closed');
+          this.$push.addClass('open').removeClass('semiOpen closed');
         } else {
-          this.$menu.css(settings.side, '0');
-          this.$push.css(settings.side, this.width);
-          this.$shrink.css({
-            'width': 'calc(100% - ' + this.width + ')'
-          });
+          this.$menu.addClass('open').removeClass('semiOpen closed');
+          this.$push.addClass('open').removeClass('semiOpen closed');
         }
       },
 
       applyClosedStyles: function() {
         var screenWidth = $(window).width();
         if (settings.semiOpenStatus && screenWidth > settings.semiOpenScreenWidth) {
-          this.$hiddenThin.hide();
-          this.$menu.animate({ width: this.semiOpenMenuWidth}, {duration: Math.abs(settings.speed - 100), easing: 'linear'});
-          this.$push.css(settings.side, this.semiOpenMenuWidth);
-          this.$shrink.css({
-            'width': 'calc(100% - ' + this.semiOpenMenuWidth + ')'
-          });
-          this.$menu.addClass('semiOpen');
+          this.$menu.addClass('semiOpen').removeClass('open closed');
+          this.$push.addClass('semiOpen').removeClass('open closed');
         } else {
-          this.$menu.css(settings.side, '-' + this.width);
-          this.$push.css(settings.side, '0');
-          this.$shrink.css('width', '100%');
+          this.$menu.addClass('closed').removeClass('open semiOpen');
+          this.$push.addClass('closed').removeClass('open semiOpen');
         }
       }
 
