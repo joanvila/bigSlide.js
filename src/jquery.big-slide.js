@@ -47,11 +47,6 @@
       'menu': ('#menu'),
       'push': ('.push'),
       'shrink': ('.shrink'),
-      'hiddenThin': ('.hiddenThin'),
-      'side': 'left',
-      'menuWidth': '15.625em',
-      'semiOpenMenuWidth': '4em',
-      'speed': '300',
       'state': 'closed',
       'activeBtn': 'active',
       'easyClose': false,
@@ -65,7 +60,7 @@
     }, options);
 
     // CSS properties set by bigSlide.js on all implicated DOM elements
-    var baseCSSDictionary = 'transition -o-transition -ms-transition -moz-transitions webkit-transition ' + settings.side;
+    var baseCSSDictionary = 'transition -o-transition -ms-transition -moz-transitions webkit-transition';
 
     var model = {
       //CSS properties set by bigSlide.js on this.$menu
@@ -120,9 +115,9 @@
         this.$menu = $(settings.menu);
         this.$push = $(settings.push);
         this.$shrink = $(settings.shrink);
-        this.$hiddenThin = $(settings.hiddenThin);
-        this.width = settings.menuWidth;
-        this.semiOpenMenuWidth = settings.semiOpenMenuWidth;
+
+        // we want to add the css sliding animation when the page is loaded (on the first menu link click)
+        var animationApplied = false;
 
         // get the initial state based on the last saved state or on the state option
         var initialState = 'closed';
@@ -156,6 +151,12 @@
 
         // register a click listener for desktop & touchstart for mobile
         menuLink.on('click.bigSlide touchstart.bigSlide', function(e) {
+          // add the animation css if not present
+          if (!animationApplied) {
+            that.$menu.addClass('animated');
+            that.$push.addClass('animated');
+            animationApplied = true;
+          }
           e.preventDefault();
           if (controller.getState() === 'open') {
             view.toggleClose();
@@ -170,11 +171,13 @@
             $(window).resize(function() {
                 var screenWidth = $(window).width();
                 if (screenWidth > settings.semiOpenScreenWidth) {
+                    that.$push.addClass('shrink');
                     if (controller.getState() === 'closed') {
                       that.$menu.addClass('semiOpen').removeClass('open closed');
                       that.$push.addClass('semiOpen').removeClass('open closed');
                     }
                 } else {
+                    that.$push.removeClass('shrink');
                     that.$menu.removeClass('semiOpen');
                     if (controller.getState() === 'closed') {
                       that.$menu.addClass('closed').removeClass('open semiOpen');
@@ -256,9 +259,11 @@
       applyOpenStyles: function() {
         var screenWidth = $(window).width();
         if (settings.semiOpenStatus && screenWidth > settings.semiOpenScreenWidth) {
+          this.$push.addClass('shrink');
           this.$menu.addClass('open').removeClass('semiOpen closed');
           this.$push.addClass('open').removeClass('semiOpen closed');
         } else {
+          this.$push.removeClass('shrink');
           this.$menu.addClass('open').removeClass('semiOpen closed');
           this.$push.addClass('open').removeClass('semiOpen closed');
         }
